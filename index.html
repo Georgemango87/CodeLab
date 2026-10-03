@@ -1,0 +1,1858 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CodeLab — HTML / CSS / JS Playground</title>
+<style>
+  /* ============================================================
+     DESIGN TOKENS
+     ============================================================ */
+  :root {
+    --bg:          #0a0e13;
+    --panel:       #0f151c;
+    --panel-2:     #141c25;
+    --panel-3:     #1a232e;
+    --border:      #222c38;
+    --border-soft: #1a222c;
+
+    --text:        #d8e2ee;
+    --text-dim:    #8a99ab;
+    --text-faint:  #5c6b7d;
+
+    --accent:      #4da3ff;
+    --accent-2:    #a78bfa;
+    --green:       #46d369;
+    --yellow:      #e3b341;
+    --red:         #ff6b6b;
+
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+            "Liberation Mono", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter,
+            Helvetica, Arial, sans-serif;
+
+    --radius: 10px;
+    --editor-w: 50%;
+
+    /* Syntax highlighting */
+    --tok-comment:  #6b7a8f;
+    --tok-keyword:  #c792ea;
+    --tok-string:   #c3e88d;
+    --tok-number:   #f78c6c;
+    --tok-color:    #f78c6c;
+    --tok-tag:      #f07178;
+    --tok-attr:     #ffcb6b;
+    --tok-property: #82aaff;
+    --tok-atrule:   #c792ea;
+    --tok-doctype:  #6b7a8f;
+    --tok-punct:    #8a99ab;
+    --tok-ident:    #d8e2ee;
+    --tok-text:     #d8e2ee;
+
+    --error-bg:   rgba(255, 107, 107, 0.12);
+    --error-line: rgba(255, 107, 107, 0.75);
+  }
+
+  /* ============================================================
+     BASE
+     ============================================================ */
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button { font-family: inherit; }
+
+  /* Custom scrollbars */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #29343f;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+  background: #3a4857;
+  background-clip: padding-box;
+}
+  ::-webkit-scrollbar-corner { background: transparent; }
+
+  /* ============================================================
+     APP SHELL
+     ============================================================ */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+
+  /* ---------------- Toolbar ---------------- */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 10px 14px;
+    background: linear-gradient(180deg, #121a23 0%, #0d141b 100%);
+    border-bottom: 1px solid var(--border);
+    flex: 0 0 auto;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: auto;
+    min-width: 0;
+  }
+
+  .logo {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #06121f;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    flex: 0 0 auto;
+    box-shadow: 0 4px 14px rgba(77, 163, 255, .28);
+  }
+
+  .brand-name {
+    font-weight: 650;
+    letter-spacing: .2px;
+    white-space: nowrap;
+  }
+
+  .brand-sub {
+    color: var(--text-faint);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  /* ---------------- Buttons ---------------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 7px 13px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--panel-3);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 550;
+    cursor: pointer;
+    transition: background .15s ease, border-color .15s ease,
+                transform .08s ease, color .15s ease;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .btn:hover { background: #223040; border-color: #33445a; }
+  .btn:active { transform: translateY(1px); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .btn svg { flex: 0 0 auto; opacity: .9; }
+
+  .btn-primary {
+    background: linear-gradient(180deg, #5aabff, #3d8fe6);
+    border-color: #3d8fe6;
+    color: #04101d;
+    font-weight: 700;
+  }
+  .btn-primary:hover {
+    background: linear-gradient(180deg, #6fb8ff, #4a9bf0);
+    border-color: #58a9ff;
+  }
+
+  .btn-danger:hover { color: var(--red); border-color: #4a2b31; }
+
+  .pill {
+    display: inline-grid;
+    place-items: center;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #253242;
+    color: var(--text-dim);
+    font-size: 11px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .pill.has-error { background: rgba(255, 107, 107, .18); color: var(--red); }
+
+  /* ============================================================
+     WORKSPACE / SPLIT PANES
+     ============================================================ */
+  .workspace {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .editor-pane {
+    display: flex;
+    flex-direction: column;
+    width: var(--editor-w);
+    min-width: 0;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+  }
+
+  .preview-pane {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--panel);
+  }
+
+  /* ---------------- Splitter ---------------- */
+  .splitter {
+    flex: 0 0 7px;
+    position: relative;
+    cursor: col-resize;
+    background: var(--bg);
+    z-index: 5;
+  }
+  .splitter::after {
+    content: "";
+    position: absolute;
+    inset: 0 3px;
+    border-radius: 3px;
+    background: var(--border);
+    transition: background .15s ease;
+  }
+  .splitter:hover::after,
+  .splitter.dragging::after { background: var(--accent); }
+
+  body.dragging { cursor: col-resize; user-select: none; }
+  body.dragging iframe { pointer-events: none; }
+
+  /* ---------------- Tabs ---------------- */
+  .tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 10px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex: 0 0 auto;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .tabs::-webkit-scrollbar { display: none; }
+
+  .tab {
+    position: relative;
+    padding: 7px 15px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-faint);
+    font-size: 12.5px;
+    font-weight: 650;
+    letter-spacing: .05em;
+    cursor: pointer;
+    transition: color .15s ease, background .15s ease, border-color .15s ease;
+  }
+  .tab:hover { color: var(--text-dim); background: var(--panel-2); }
+  .tab.active {
+    color: var(--text);
+    background: var(--panel-3);
+    border-color: var(--border);
+  }
+  .tab.active::before {
+    content: "";
+    position: absolute;
+    left: 12px; right: 12px; bottom: -9px;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+
+  .tab-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-right: 7px;
+    vertical-align: 1px;
+  }
+  .tab[data-lang="html"] .tab-dot { background: #e8834a; }
+  .tab[data-lang="css"]  .tab-dot { background: var(--accent); }
+  .tab[data-lang="js"]   .tab-dot { background: var(--yellow); }
+
+  /* ---------------- Editors ---------------- */
+  .editors {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    background: var(--panel);
+  }
+
+  .editor-wrap {
+    position: absolute;
+    inset: 0;
+    display: none;
+    overflow: hidden;
+  }
+  .editor-wrap.active { display: block; }
+
+  /* Shared typography — MUST match exactly between the two layers. */
+  .editor-highlight,
+  .editor {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 16px 18px;
+    border: 0;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    line-height: 1.65;
+    tab-size: 2;
+    white-space: pre;
+    overflow: auto;
+    box-sizing: border-box;
+    word-wrap: normal;
+    overflow-wrap: normal;
+    letter-spacing: 0;
+  }
+
+  .editor-highlight {
+    background: var(--panel);
+    color: var(--text);
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+    scrollbar-width: none;
+  }
+  .editor-highlight::-webkit-scrollbar { display: none; }
+  .editor-highlight code {
+    font: inherit;
+    white-space: inherit;
+    tab-size: inherit;
+    display: block;
+    color: var(--tok-text);
+  }
+
+  .editor {
+    background: transparent;
+    color: transparent;
+    caret-color: var(--accent);
+    z-index: 2;
+    resize: none;
+    outline: none;
+  }
+  .editor::selection {
+    background: rgba(77, 163, 255, .28);
+    color: transparent;
+  }
+  .editor::placeholder { color: var(--text-faint); }
+
+  /* ---------------- Token colors ---------------- */
+  .tok-comment  { color: var(--tok-comment); font-style: italic; }
+  .tok-keyword  { color: var(--tok-keyword); }
+  .tok-string   { color: var(--tok-string); }
+  .tok-number   { color: var(--tok-number); }
+  .tok-color    { color: var(--tok-color); }
+  .tok-tag      { color: var(--tok-tag); }
+  .tok-attr     { color: var(--tok-attr); }
+  .tok-property { color: var(--tok-property); }
+  .tok-atrule   { color: var(--tok-atrule); }
+  .tok-doctype  { color: var(--tok-doctype); font-style: italic; }
+  .tok-punct    { color: var(--tok-punct); }
+  .tok-ident    { color: var(--tok-ident); }
+
+  .editor-error-line {
+    background: var(--error-bg);
+    text-decoration: underline wavy var(--error-line);
+    text-underline-offset: 3px;
+  }
+
+  /* ============================================================
+     PREVIEW PANE
+     ============================================================ */
+  .pane-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 7px 10px 7px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    flex: 0 0 auto;
+  }
+
+  .pane-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(70, 211, 105, .55);
+    animation: pulse 2.2s ease-out infinite;
+  }
+  @keyframes pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(70, 211, 105, .5); }
+    70%  { box-shadow: 0 0 0 7px rgba(70, 211, 105, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(70, 211, 105, 0); }
+  }
+
+  .pane-header .spacer { margin-left: auto; }
+
+  .btn-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--text-dim);
+    padding: 6px 10px;
+  }
+  .btn-ghost:hover { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+  .btn-ghost.active { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+
+  .preview-body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    background: #ffffff;
+  }
+
+  #preview {
+    flex: 1 1 auto;
+    width: 100%;
+    border: 0;
+    display: block;
+    background: #ffffff;
+  }
+
+  /* ---------------- Console ---------------- */
+  .console {
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+    height: 0;
+    overflow: hidden;
+    background: #0b1017;
+    border-top: 1px solid var(--border);
+    transition: height .22s cubic-bezier(.4, 0, .2, 1);
+  }
+  .console.open { height: 190px; }
+
+  .console-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px 6px 14px;
+    border-bottom: 1px solid var(--border-soft);
+    flex: 0 0 auto;
+  }
+
+  .console-title {
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  .console-head .spacer { margin-left: auto; }
+
+  .icon-btn {
+    display: grid;
+    place-items: center;
+    width: 26px; height: 26px;
+    border-radius: 6px;
+    border: 1px solid transparent;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .icon-btn:hover { background: var(--panel-3); color: var(--text); border-color: var(--border); }
+
+  .console-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 6px 0 10px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+
+  .console-empty {
+    padding: 14px 16px;
+    color: var(--text-faint);
+    font-family: var(--sans);
+    font-size: 12.5px;
+    font-style: italic;
+  }
+
+  .console-line {
+    display: flex;
+    gap: 9px;
+    padding: 3px 14px 3px 12px;
+    border-left: 2px solid transparent;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .console-line + .console-line { border-top: 1px solid rgba(255, 255, 255, .03); }
+
+  .console-line .marker {
+    flex: 0 0 auto;
+    width: 12px;
+    text-align: center;
+    opacity: .85;
+    font-weight: 700;
+  }
+
+  .console-line.log   { color: #b9c7d6; }
+  .console-line.info  { color: #7fc4ff; border-left-color: rgba(77, 163, 255, .5); }
+  .console-line.warn  { color: var(--yellow); background: rgba(227, 179, 65, .06); border-left-color: rgba(227, 179, 65, .6); }
+  .console-line.error { color: var(--red); background: rgba(255, 107, 107, .07); border-left-color: rgba(255, 107, 107, .7); }
+
+  /* ============================================================
+     TOAST
+     ============================================================ */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 26px;
+    transform: translate(-50%, 18px);
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: #1c2733;
+    border: 1px solid #2e3d4d;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 550;
+    box-shadow: 0 12px 34px rgba(0, 0, 0, .5);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s ease, transform .2s ease;
+    z-index: 9999;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  /* ---------------- Preview fullscreen ---------------- */
+  body.preview-fullscreen .preview-pane {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    width: auto;
+    height: auto;
+    border-right: 0;
+    border-radius: 0;
+  }
+
+  @media (max-width: 860px) {
+    .workspace { flex-direction: column; }
+    .editor-pane {
+      width: 100%;
+      height: 48%;
+      border-right: 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-pane { height: 52%; }
+    .splitter { display: none; }
+    .brand-sub { display: none; }
+  }
+
+  @media (max-width: 560px) {
+    .btn span.label { display: none; }
+    .btn { padding: 8px 11px; }
+    .toolbar { gap: 8px; padding: 8px 10px; }
+    .console.open { height: 150px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ================= TOOLBAR ================= -->
+  <header class="toolbar">
+    <div class="brand">
+      <div class="logo">&lt;/&gt;</div>
+      <div class="brand-name">CodeLab</div>
+      <div class="brand-sub">HTML · CSS · JS Playground</div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="runBtn" title="Run (Ctrl/Cmd + Enter)">
+        <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor" aria-hidden="true">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span class="label">Run</span>
+      </button>
+
+      <button class="btn" id="copyBtn" title="Copy the full document to clipboard">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <rect x="9" y="9" width="11" height="11" rx="2"/>
+          <path d="M5 15V5a2 2 0 0 1 2-2h10"/>
+        </svg>
+        <span class="label">Copy</span>
+      </button>
+
+      <button class="btn" id="downloadBtn" title="Download as a single .html file">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3v12"/><path d="m7 12 5 5 5-5"/><path d="M5 21h14"/>
+        </svg>
+        <span class="label">Download</span>
+      </button>
+
+      <button class="btn" id="resetBtn" title="Restore the starter template">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/>
+        </svg>
+        <span class="label">Reset</span>
+      </button>
+
+      <button class="btn btn-danger" id="clearBtn" title="Clear all editors">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+          <path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/>
+        </svg>
+        <span class="label">Clear</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ================= WORKSPACE ================= -->
+  <main class="workspace" id="workspace">
+
+    <!-- ---------- Editors ---------- -->
+    <section class="editor-pane">
+      <nav class="tabs" role="tablist" aria-label="Code editors">
+        <button class="tab active" data-lang="html" role="tab" aria-selected="true">
+          <i class="tab-dot"></i>HTML
+        </button>
+        <button class="tab" data-lang="css" role="tab" aria-selected="false">
+          <i class="tab-dot"></i>CSS
+        </button>
+        <button class="tab" data-lang="js" role="tab" aria-selected="false">
+          <i class="tab-dot"></i>JavaScript
+        </button>
+      </nav>
+
+      <div class="editors">
+        <div class="editor-wrap active" data-lang="html">
+          <pre class="editor-highlight" aria-hidden="true"><code></code></pre>
+          <textarea id="editor-html" class="editor" spellcheck="false"
+                    autocomplete="off" autocapitalize="off" autocorrect="off"
+                    aria-label="HTML editor" placeholder="Write your HTML here…"></textarea>
+        </div>
+        <div class="editor-wrap" data-lang="css">
+          <pre class="editor-highlight" aria-hidden="true"><code></code></pre>
+          <textarea id="editor-css" class="editor" spellcheck="false"
+                    autocomplete="off" autocapitalize="off" autocorrect="off"
+                    aria-label="CSS editor" placeholder="Write your CSS here…"></textarea>
+        </div>
+        <div class="editor-wrap" data-lang="js">
+          <pre class="editor-highlight" aria-hidden="true"><code></code></pre>
+          <textarea id="editor-js" class="editor" spellcheck="false"
+                    autocomplete="off" autocapitalize="off" autocorrect="off"
+                    aria-label="JavaScript editor" placeholder="Write your JavaScript here…"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- Splitter ---------- -->
+    <div class="splitter" id="splitter" role="separator" aria-orientation="vertical"
+         title="Drag to resize"></div>
+
+    <!-- ---------- Preview ---------- -->
+    <section class="preview-pane">
+      <div class="pane-header">
+        <div class="pane-title">
+          <span class="live-dot"></span> Live Preview
+        </div>
+
+        <div class="spacer"></div>
+
+        <button class="btn btn-ghost" id="consoleToggle" title="Toggle console">
+          Console
+          <span class="pill" id="consoleBadge">0</span>
+        </button>
+
+                <button class="icon-btn" id="reloadBtn" title="Reload preview">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/>
+          </svg>
+        </button>
+
+        <button class="icon-btn" id="fullscreenBtn" title="Fullscreen preview (Esc to exit)">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+            <path d="M16 3h3a2 2 0 0 1 2 2v3"/>
+            <path d="M8 21H5a2 2 0 0 1-2-2v-3"/>
+            <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="preview-body">
+        <iframe id="preview" title="Live preview"
+                sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
+
+        <div class="console" id="consolePanel">
+          <div class="console-head">
+            <span class="console-title">Console</span>
+            <div class="spacer"></div>
+            <button class="icon-btn" id="clearConsoleBtn" title="Clear console">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 7h16"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
+                <path d="M6 7l1 12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-12"/>
+              </svg>
+            </button>
+            <button class="icon-btn" id="closeConsoleBtn" title="Hide console">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18"/>
+              </svg>
+            </button>
+          </div>
+          <div class="console-body" id="consoleBody">
+            <div class="console-empty" id="consoleEmpty">
+              Console output from your JavaScript will appear here…
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+const LT           = '<';
+const CLOSE_STYLE  = LT + '/style>';
+const CLOSE_SCRIPT = LT + '/script>';
+
+const STYLE_END_RE  = new RegExp(LT + '/style',   'gi');
+const SCRIPT_END_RE = new RegExp(LT + '/script>', 'gi');
+  
+(function () {
+  'use strict';
+
+  /* ============================================================
+     ELEMENT REFERENCES
+     ============================================================ */
+  const workspace     = document.getElementById('workspace');
+  const splitter      = document.getElementById('splitter');
+  const preview       = document.getElementById('preview');
+  const tabs          = Array.prototype.slice.call(document.querySelectorAll('.tab'));
+
+  const editors = {
+    html: document.getElementById('editor-html'),
+    css:  document.getElementById('editor-css'),
+    js:   document.getElementById('editor-js')
+  };
+
+  const runBtn          = document.getElementById('runBtn');
+  const copyBtn         = document.getElementById('copyBtn');
+  const downloadBtn     = document.getElementById('downloadBtn');
+  const clearBtn        = document.getElementById('clearBtn');
+  const resetBtn        = document.getElementById('resetBtn');
+  const reloadBtn       = document.getElementById('reloadBtn');
+  const fullscreenBtn   = document.getElementById('fullscreenBtn');
+
+  const consolePanel    = document.getElementById('consolePanel');
+  const consoleToggle   = document.getElementById('consoleToggle');
+  const consoleBadge    = document.getElementById('consoleBadge');
+  const consoleBody     = document.getElementById('consoleBody');
+  const consoleEmpty    = document.getElementById('consoleEmpty');
+  const clearConsoleBtn = document.getElementById('clearConsoleBtn');
+  const closeConsoleBtn = document.getElementById('closeConsoleBtn');
+
+  const toastEl = document.getElementById('toast');
+
+  const INDENT = '  ';
+  const MAX_CONSOLE_LINES = 250;
+  const DEBOUNCE_MS = 420;
+
+  /* ============================================================
+     SYNTAX HIGHLIGHTING ENGINE
+     ------------------------------------------------------------
+     Lightweight regex-free tokenizers for HTML, CSS and JS.
+     Rendered into a <pre> layer sitting behind a transparent
+     <textarea> (the standard overlay technique).
+     ============================================================ */
+
+  const ESCAPE_MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
+  function escapeHTML(str) {
+    return str.replace(/[&<>]/g, function (c) { return ESCAPE_MAP[c]; });
+  }
+
+  /* ---------------- Tokenizers ---------------- */
+
+  function tokenizeHTML(code) {
+    const tokens = [];
+    let i = 0, len = code.length;
+
+    while (i < len) {
+      if (code.startsWith('<!--', i)) {
+        const end = code.indexOf('-->', i + 4);
+        const stop = end === -1 ? len : end + 3;
+        tokens.push({ type: 'comment', text: code.slice(i, stop) });
+        i = stop;
+        continue;
+      }
+      if (code.startsWith('<!', i)) {
+        const end = code.indexOf('>', i);
+        const stop = end === -1 ? len : end + 1;
+        tokens.push({ type: 'doctype', text: code.slice(i, stop) });
+        i = stop;
+        continue;
+      }
+      if (code[i] === '<') {
+        const rest = code.slice(i);
+        const tagMatch = rest.match(/^<\/?([a-zA-Z][\w-]*)/);
+        if (tagMatch) {
+          const isClose = rest[1] === '/';
+          tokens.push({ type: 'punct', text: isClose ? '</' : '<' });
+          tokens.push({ type: 'tag', text: tagMatch[1] });
+          i += tagMatch[0].length;
+
+          while (i < len) {
+            if (code.startsWith('/>', i)) {
+              tokens.push({ type: 'punct', text: '/>' }); i += 2; break;
+            }
+            if (code[i] === '>') {
+              tokens.push({ type: 'punct', text: '>' }); i += 1; break;
+            }
+            const c = code[i];
+            if (/\s/.test(c)) {
+              const ws = code.slice(i).match(/^\s+/)[0];
+              tokens.push({ type: 'text', text: ws }); i += ws.length; continue;
+            }
+            if (/[a-zA-Z_:@#]/.test(c)) {
+              const an = code.slice(i).match(/^[a-zA-Z_:@#][\w:.\-]*/)[0];
+              tokens.push({ type: 'attr', text: an }); i += an.length; continue;
+            }
+            if (c === '=') {
+              tokens.push({ type: 'punct', text: '=' }); i += 1; continue;
+            }
+            if (c === '"' || c === "'") {
+              const q = c;
+              let j = i + 1;
+              while (j < len && code[j] !== q) j++;
+              j = Math.min(j + 1, len);
+              tokens.push({ type: 'string', text: code.slice(i, j) });
+              i = j; continue;
+            }
+            tokens.push({ type: 'text', text: c }); i += 1;
+          }
+          continue;
+        }
+      }
+      const nextLt = code.indexOf('<', i);
+      const stop = nextLt === -1 ? len : nextLt;
+      if (stop === i) {
+        tokens.push({ type: 'text', text: code[i] }); i += 1;
+      } else {
+        tokens.push({ type: 'text', text: code.slice(i, stop) }); i = stop;
+      }
+    }
+    return tokens;
+  }
+
+  function tokenizeCSS(code) {
+    const tokens = [];
+    let i = 0, len = code.length;
+
+    while (i < len) {
+      const c = code[i];
+
+      if (code.startsWith('/*', i)) {
+        const end = code.indexOf('*/', i + 2);
+        const stop = end === -1 ? len : end + 2;
+        tokens.push({ type: 'comment', text: code.slice(i, stop) });
+        i = stop; continue;
+      }
+      if (/\s/.test(c)) {
+        const ws = code.slice(i).match(/^\s+/)[0];
+        tokens.push({ type: 'text', text: ws }); i += ws.length; continue;
+      }
+      if (c === '"' || c === "'") {
+        const q = c;
+        let j = i + 1;
+        while (j < len && code[j] !== q) {
+          if (code[j] === '\\') j += 1;
+          j += 1;
+        }
+        j = Math.min(j + 1, len);
+        tokens.push({ type: 'string', text: code.slice(i, j) });
+        i = j; continue;
+      }
+      if (c === '@') {
+        const m = code.slice(i).match(/^@[\w-]+/);
+        if (m) { tokens.push({ type: 'atrule', text: m[0] }); i += m[0].length; continue; }
+      }
+      if (c === '#') {
+        const m = code.slice(i).match(/^#[0-9a-fA-F]{3,8}\b/);
+        if (m) { tokens.push({ type: 'color', text: m[0] }); i += m[0].length; continue; }
+      }
+      if (/\d/.test(c) || (c === '.' && /\d/.test(code[i + 1] || ''))) {
+        const m = code.slice(i).match(/^\d*\.?\d+(?:[a-zA-Z%]+)?/);
+        if (m) { tokens.push({ type: 'number', text: m[0] }); i += m[0].length; continue; }
+      }
+      if (/[-a-zA-Z_]/.test(c)) {
+        const m = code.slice(i).match(/^-?[a-zA-Z_][\w-]*/);
+        if (m) {
+          let rest = code.slice(i + m[0].length);
+          let k = 0;
+          while (k < rest.length && /\s/.test(rest[k]) && rest[k] !== '\n') k += 1;
+          const isProp = rest[k] === ':';
+          tokens.push({ type: isProp ? 'property' : 'ident', text: m[0] });
+          i += m[0].length; continue;
+        }
+      }
+      tokens.push({ type: 'punct', text: c }); i += 1;
+    }
+    return tokens;
+  }
+
+  const JS_KEYWORDS = new Set([
+    'var', 'let', 'const', 'function', 'return', 'if', 'else', 'for', 'while',
+    'do', 'break', 'continue', 'new', 'delete', 'typeof', 'instanceof', 'in',
+    'of', 'class', 'extends', 'super', 'this', 'null', 'undefined', 'true',
+    'false', 'try', 'catch', 'finally', 'throw', 'switch', 'case', 'default',
+    'yield', 'async', 'await', 'import', 'export', 'from', 'as', 'static',
+    'get', 'set', 'void', 'with', 'debugger'
+  ]);
+
+  function tokenizeJS(code) {
+    const tokens = [];
+    let i = 0, len = code.length;
+
+    while (i < len) {
+      const c = code[i];
+
+      if (/\s/.test(c)) {
+        const ws = code.slice(i).match(/^\s+/)[0];
+        tokens.push({ type: 'text', text: ws }); i += ws.length; continue;
+      }
+      if (code.startsWith('//', i)) {
+        let end = code.indexOf('\n', i);
+        if (end === -1) end = len;
+        tokens.push({ type: 'comment', text: code.slice(i, end) });
+        i = end; continue;
+      }
+      if (code.startsWith('/*', i)) {
+        const end = code.indexOf('*/', i + 2);
+        const stop = end === -1 ? len : end + 2;
+        tokens.push({ type: 'comment', text: code.slice(i, stop) });
+        i = stop; continue;
+      }
+      if (c === '`') {
+        let j = i + 1;
+        while (j < len && code[j] !== '`') {
+          if (code[j] === '\\') j += 1;
+          j += 1;
+        }
+        j = Math.min(j + 1, len);
+        tokens.push({ type: 'string', text: code.slice(i, j) });
+        i = j; continue;
+      }
+      if (c === '"' || c === "'") {
+        const q = c;
+        let j = i + 1;
+        while (j < len && code[j] !== q && code[j] !== '\n') {
+          if (code[j] === '\\') j += 1;
+          j += 1;
+        }
+        j = Math.min(j + 1, len);
+        tokens.push({ type: 'string', text: code.slice(i, j) });
+        i = j; continue;
+      }
+      if (/\d/.test(c)) {
+        const m = code.slice(i).match(
+          /^(?:0[xX][0-9a-fA-F]+|0[bB][01]+|0[oO][0-7]+|\d*\.?\d+(?:[eE][+-]?\d+)?)/
+        );
+        if (m) { tokens.push({ type: 'number', text: m[0] }); i += m[0].length; continue; }
+      }
+      if (/[a-zA-Z_$]/.test(c)) {
+        const m = code.slice(i).match(/^[a-zA-Z_$][\w$]*/)[0];
+        tokens.push({ type: JS_KEYWORDS.has(m) ? 'keyword' : 'ident', text: m });
+        i += m.length; continue;
+      }
+      tokens.push({ type: 'punct', text: c }); i += 1;
+    }
+    return tokens;
+  }
+
+  const TOKENIZERS = { html: tokenizeHTML, css: tokenizeCSS, js: tokenizeJS };
+
+  /* ---------------- Error detection ---------------- */
+
+  function findJSErrorLine(code) {
+    try { new Function(code); return null; }
+    catch (err) {
+      if (!(err instanceof SyntaxError)) return null;
+      if (typeof err.lineNumber === 'number') return err.lineNumber;
+      const m = String(err.message).match(/line\s+(\d+)|:(\d+):/i);
+      if (m) return parseInt(m[1] || m[2], 10);
+      return 1;
+    }
+  }
+
+  function findCSSErrorLine(code) {
+    const tokens = tokenizeCSS(code);
+    const stack = [];
+    let line = 1;
+    for (let t = 0; t < tokens.length; t++) {
+      const tok = tokens[t];
+      const lines = tok.text.split('\n');
+      for (let p = 0; p < lines.length; p++) {
+        if (p > 0) line += 1;
+        if (tok.type === 'comment' || tok.type === 'string') continue;
+        const part = lines[p];
+        for (let q = 0; q < part.length; q++) {
+          const ch = part[q];
+          if (ch === '{' || ch === '(' || ch === '[') stack.push({ ch: ch, line: line });
+          else if (ch === '}' || ch === ')' || ch === ']') {
+            if (stack.length === 0) return line;
+            stack.pop();
+          }
+        }
+      }
+    }
+    if (stack.length > 0) return stack[stack.length - 1].line;
+    return null;
+  }
+
+  function findHTMLErrorLine(code) {
+    const VOID = new Set(['area','base','br','col','embed','hr','img','input',
+                          'link','meta','param','source','track','wbr']);
+    const lineFor = new Uint32Array(code.length + 1);
+    let l = 1;
+    for (let i = 0; i < code.length; i++) {
+      lineFor[i] = l;
+      if (code[i] === '\n') l += 1;
+    }
+    lineFor[code.length] = l;
+
+    const stack = [];
+    const re = /<(\/?)([a-zA-Z][\w-]*)\b[^>]*?(\/?)>/g;
+    let m;
+    while ((m = re.exec(code)) !== null) {
+      const isClose = m[1] === '/';
+      const isSelf  = m[3] === '/';
+      const name    = m[2].toLowerCase();
+      const atLine  = lineFor[m.index];
+      if (VOID.has(name) || isSelf) continue;
+      if (!isClose) {
+        stack.push({ name: name, line: atLine });
+      } else {
+        for (let s = stack.length - 1; s >= 0; s--) {
+          if (stack[s].name === name) { stack.splice(s, 1); break; }
+        }
+      }
+    }
+    if (stack.length > 0) return stack[stack.length - 1].line;
+    return null;
+  }
+
+  const ERROR_FINDERS = {
+    html: findHTMLErrorLine,
+    css:  findCSSErrorLine,
+    js:   findJSErrorLine
+  };
+
+  /* ---------------- Highlight rendering ---------------- */
+
+  function buildHighlightedHTML(tokens, errorLine) {
+    let out = '';
+    let line = 1;
+
+    for (let t = 0; t < tokens.length; t++) {
+      const tok = tokens[t];
+      const isText = tok.type === 'text';
+      const parts = tok.text.split('\n');
+
+      for (let p = 0; p < parts.length; p++) {
+        if (p > 0) { out += '\n'; line += 1; }
+        const part = parts[p];
+        if (part === '') continue;
+
+        const esc = escapeHTML(part);
+        const isErr = errorLine && line === errorLine;
+
+        if (isText) {
+          out += isErr
+            ? '<span class="editor-error-line">' + esc + '</span>'
+            : esc;
+        } else {
+          const cls = 'tok-' + tok.type + (isErr ? ' editor-error-line' : '');
+          out += '<span class="' + cls + '">' + esc + '</span>';
+        }
+      }
+    }
+    return out;
+  }
+
+  /* ---------------- Editor state ---------------- */
+
+  const editorState = {};
+
+  Object.keys(editors).forEach(function (lang) {
+    const ta = editors[lang];
+    const wrap = ta.closest('.editor-wrap');
+    const hl = wrap.querySelector('.editor-highlight');
+    const hlCode = hl.querySelector('code');
+
+    editorState[lang] = {
+      ta: ta, wrap: wrap, hl: hl, hlCode: hlCode,
+      lastValue: null, lastErrorLine: undefined
+    };
+
+    ta.addEventListener('scroll', function () {
+      hl.scrollTop = ta.scrollTop;
+      hl.scrollLeft = ta.scrollLeft;
+    });
+  });
+
+  function refreshHighlight(lang) {
+    const state = editorState[lang];
+    const value = state.ta.value;
+    if (value === state.lastValue) return;
+
+    let errorLine = null;
+    try { errorLine = ERROR_FINDERS[lang](value); } catch (e) { errorLine = null; }
+
+    const tokens = TOKENIZERS[lang](value);
+    let html = buildHighlightedHTML(tokens, errorLine);
+
+    if (value.endsWith('\n')) html += ' ';
+
+    state.hlCode.innerHTML = html;
+    state.lastValue = value;
+    state.lastErrorLine = errorLine;
+
+    state.hl.scrollTop = state.ta.scrollTop;
+    state.hl.scrollLeft = state.ta.scrollLeft;
+  }
+
+  function refreshAllHighlights() {
+    Object.keys(editorState).forEach(refreshHighlight);
+  }
+
+  /* ============================================================
+     STARTER TEMPLATE
+     ============================================================ */
+  const DEFAULT_HTML =
+'<div class="card">\n' +
+'  <h1>Hello, world 👋</h1>\n' +
+'  <p>Edit the HTML, CSS or JavaScript and watch the preview update live.</p>\n' +
+'  <button id="magic">Click me</button>\n' +
+'</div>\n';
+
+  const DEFAULT_CSS =
+'* { box-sizing: border-box; }\n' +
+'\n' +
+'body {\n' +
+'  margin: 0;\n' +
+'  min-height: 100vh;\n' +
+'  display: grid;\n' +
+'  place-items: center;\n' +
+'  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;\n' +
+'  background: radial-gradient(circle at 50% 0%, #1e293b, #0b1120 70%);\n' +
+'  color: #e2e8f0;\n' +
+'}\n' +
+'\n' +
+'.card {\n' +
+'  max-width: 420px;\n' +
+'  padding: 48px 40px;\n' +
+'  text-align: center;\n' +
+'  border-radius: 20px;\n' +
+'  background: rgba(255, 255, 255, 0.04);\n' +
+'  border: 1px solid rgba(255, 255, 255, 0.08);\n' +
+'  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);\n' +
+'}\n' +
+'\n' +
+'h1 {\n' +
+'  margin: 0 0 12px;\n' +
+'  font-size: 2rem;\n' +
+'  background: linear-gradient(90deg, #60a5fa, #a78bfa);\n' +
+'  -webkit-background-clip: text;\n' +
+'  background-clip: text;\n' +
+'  color: transparent;\n' +
+'}\n' +
+'\n' +
+'p {\n' +
+'  margin: 0 0 24px;\n' +
+'  color: #94a3b8;\n' +
+'  line-height: 1.6;\n' +
+'}\n' +
+'\n' +
+'button {\n' +
+'  padding: 12px 26px;\n' +
+'  font: inherit;\n' +
+'  font-weight: 600;\n' +
+'  color: #0b1120;\n' +
+'  background: linear-gradient(90deg, #60a5fa, #a78bfa);\n' +
+'  border: none;\n' +
+'  border-radius: 999px;\n' +
+'  cursor: pointer;\n' +
+'  transition: transform .15s ease, box-shadow .15s ease;\n' +
+'}\n' +
+'\n' +
+'button:hover {\n' +
+'  transform: translateY(-2px);\n' +
+'  box-shadow: 0 10px 24px rgba(96, 165, 250, .35);\n' +
+'}\n' +
+'\n' +
+'button:active { transform: translateY(0); }\n';
+
+  const DEFAULT_JS =
+'console.log("👋 Hello from the console!");\n' +
+'\n' +
+'const button = document.getElementById("magic");\n' +
+'let clicks = 0;\n' +
+'\n' +
+'button.addEventListener("click", () => {\n' +
+'  clicks++;\n' +
+'  button.textContent = "Clicked " + clicks + " time" + (clicks === 1 ? "" : "s");\n' +
+'  console.log("Button clicked " + clicks + " time(s)");\n' +
+'});\n';
+
+  /* ============================================================
+     CONSOLE BRIDGE
+     Injected into every preview document. It patches the console,
+     the global error handler and unhandled rejections, then forwards
+     everything to the parent window via postMessage.
+     ============================================================ */
+  const CONSOLE_BRIDGE = [
+    '(function () {',
+    '  var MAX_DEPTH = 3;',
+    '',
+    '  function format(value, depth) {',
+    '    depth = depth || 0;',
+    '    try {',
+    '      if (value === null) return "null";',
+    '      if (value === undefined) return "undefined";',
+    '      var type = typeof value;',
+    '      if (type === "string") return depth === 0 ? value : \'"\' + value + \'"\';',
+    '      if (type === "number" || type === "boolean" || type === "bigint") return String(value);',
+    '      if (type === "symbol") return value.toString();',
+    '      if (type === "function") return "ƒ " + (value.name || "anonymous") + "()";',
+    '      if (value instanceof Error) return value.name + ": " + value.message;',
+    '      if (typeof Element !== "undefined" && value instanceof Element) {',
+    '        return "<" + value.tagName.toLowerCase() + ">";',
+    '      }',
+    '      if (depth > MAX_DEPTH) return Array.isArray(value) ? "[…]" : "{…}";',
+    '      if (Array.isArray(value)) {',
+    '        var items = value.slice(0, 25).map(function (v) { return format(v, depth + 1); });',
+    '        return "[" + items.join(", ") + (value.length > 25 ? ", …" : "") + "]";',
+    '      }',
+    '      var keys = Object.keys(value);',
+    '      var pairs = keys.slice(0, 25).map(function (k) {',
+    '        return k + ": " + format(value[k], depth + 1);',
+    '      });',
+    '      return "{ " + pairs.join(", ") + (keys.length > 25 ? ", …" : "") + " }";',
+    '    } catch (err) {',
+    '      return String(value);',
+    '    }',
+    '  }',
+    '',
+    '  function post(payload) {',
+    '    try { window.parent.postMessage(payload, "*"); } catch (err) {}',
+    '  }',
+    '',
+    '  function send(level, args) {',
+    '    post({',
+    '      source: "codelab-console",',
+    '      level: level,',
+    '      text: Array.prototype.map.call(args, function (a) { return format(a, 0); }).join(" ")',
+    '    });',
+    '  }',
+    '',
+    '  ["log", "info", "warn", "error", "debug"].forEach(function (level) {',
+    '    var original = console[level];',
+    '    console[level] = function () {',
+    '      send(level === "debug" ? "log" : level, arguments);',
+    '      if (original) { try { original.apply(console, arguments); } catch (e) {} }',
+    '    };',
+    '  });',
+    '',
+    '  console.clear = function () {',
+    '    post({ source: "codelab-console", level: "clear" });',
+    '  };',
+    '',
+    '  window.addEventListener("error", function (event) {',
+    '    var message = event.message || "Script error";',
+    '    if (event.lineno) message += "  (line " + event.lineno + ")";',
+    '    send("error", [message]);',
+    '  });',
+    '',
+    '  window.addEventListener("unhandledrejection", function (event) {',
+    '    send("error", ["Unhandled promise rejection: " + format(event.reason, 0)]);',
+    '  });',
+    '})();'
+  ].join('\n');
+
+  /* ============================================================
+     DOCUMENT BUILDERS
+     ============================================================ */
+
+const SCRIPT_END_RE = new RegExp(LT + '/script>', 'gi');
+const STYLE_END_RE  = new RegExp(LT + '/style',   'gi');
+
+function escapeStyleContent(css) {
+  return css.replace(STYLE_END_RE, LT + '\\/style');
+}
+
+  function buildPreviewDocument() {
+  const encodedJS = JSON.stringify(editors.js.value).replace(/</g, '\\u003c');
+
+  return '<!DOCTYPE html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    LT + 'style>\n' + escapeStyleContent(editors.css.value) + '\n' + CLOSE_STYLE + '\n' +
+    '</head>\n' +
+    '<body>\n' +
+    editors.html.value + '\n' +
+    LT + 'script>' + CONSOLE_BRIDGE + CLOSE_SCRIPT + '\n' +
+    LT + 'script>\n' +
+    '(function () {\n' +
+    '  var code = ' + encodedJS + ';\n' +
+    '  try { (0, eval)(code); }\n' +
+    '  catch (err) { console.error(err); }\n' +
+    '})();\n' +
+    CLOSE_SCRIPT + '\n' +
+    '</body>\n' +
+    '</html>';
+}
+
+  /**
+   * Builds a clean, standalone HTML file (no console bridge) for
+   * copy / download.
+   */
+  function buildStandaloneDocument() {
+  const safeJS = editors.js.value.replace(SCRIPT_END_RE, LT + '\\/script>');
+
+  return '<!DOCTYPE html>\n' +
+    '<html lang="en">\n' +
+    '<head>\n' +
+    '<meta charset="utf-8">\n' +
+    '<meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+    '<title>My Project</title>\n' +
+    LT + 'style>\n' + escapeStyleContent(editors.css.value) + '\n' + CLOSE_STYLE + '\n' +
+    '</head>\n' +
+    '<body>\n' +
+    editors.html.value + '\n' +
+    LT + 'script>\n' + safeJS + '\n' + CLOSE_SCRIPT + '\n' +
+    '</body>\n' +
+    '</html>';
+}
+
+  /* ============================================================
+     LIVE PREVIEW
+     ============================================================ */
+  let debounceTimer = null;
+
+  function scheduleRun() {
+    window.clearTimeout(debounceTimer);
+    debounceTimer = window.setTimeout(runPreview, DEBOUNCE_MS);
+  }
+
+  function runPreview() {
+    window.clearTimeout(debounceTimer);
+    resetConsole();
+    preview.srcdoc = buildPreviewDocument();
+  }
+
+  /* ============================================================
+     CONSOLE PANEL
+     ============================================================ */
+  let consoleCount = 0;
+  let errorCount = 0;
+
+  function resetConsole() {
+    consoleBody.innerHTML = '';
+    consoleBody.appendChild(consoleEmpty);
+    consoleEmpty.style.display = '';
+    consoleCount = 0;
+    errorCount = 0;
+    updateConsoleBadge();
+  }
+
+  function updateConsoleBadge() {
+    consoleBadge.textContent = String(consoleCount);
+    consoleBadge.classList.toggle('has-error', errorCount > 0);
+  }
+
+  const MARKERS = { log: '›', info: 'i', warn: '!', error: '×' };
+
+  function appendConsoleLine(level, text) {
+    if (consoleEmpty.parentNode === consoleBody) {
+      consoleEmpty.style.display = 'none';
+    }
+
+    const line = document.createElement('div');
+    line.className = 'console-line ' + level;
+
+    const marker = document.createElement('span');
+    marker.className = 'marker';
+    marker.textContent = MARKERS[level] || '›';
+
+    const message = document.createElement('span');
+    message.className = 'message';
+    message.textContent = text;
+
+    line.appendChild(marker);
+    line.appendChild(message);
+    consoleBody.appendChild(line);
+
+    // Trim the oldest lines so the DOM never grows unbounded.
+    while (consoleBody.querySelectorAll('.console-line').length > MAX_CONSOLE_LINES) {
+      const first = consoleBody.querySelector('.console-line');
+      if (!first) break;
+      first.remove();
+    }
+
+    consoleCount++;
+    if (level === 'error') errorCount++;
+    updateConsoleBadge();
+
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+  }
+
+  function openConsole() {
+    consolePanel.classList.add('open');
+    consoleToggle.classList.add('active');
+    consoleBody.scrollTop = consoleBody.scrollHeight;
+  }
+
+  function closeConsole() {
+    consolePanel.classList.remove('open');
+    consoleToggle.classList.remove('active');
+  }
+
+  function toggleConsole() {
+    if (consolePanel.classList.contains('open')) closeConsole();
+    else openConsole();
+  }
+
+  /* Listen for messages coming from the preview iframe. */
+  window.addEventListener('message', function (event) {
+    if (event.source !== preview.contentWindow) return;
+
+    const data = event.data;
+    if (!data || data.source !== 'codelab-console') return;
+
+    if (data.level === 'clear') {
+      resetConsole();
+      return;
+    }
+
+    appendConsoleLine(data.level || 'log', String(data.text));
+  });
+
+  /* ============================================================
+     EDITOR BEHAVIOUR — tabs, indentation, auto-indent
+     ============================================================ */
+  function getActiveEditor() {
+    for (let i = 0; i < tabs.length; i++) {
+      if (tabs[i].classList.contains('active')) return editors[tabs[i].dataset.lang];
+    }
+    return editors.html;
+  }
+
+  /* ---- Tab switching ---- */
+  tabs.forEach(function (tab) {
+    tab.addEventListener('click', function () {
+      tabs.forEach(function (t) {
+        const isActive = t === tab;
+        t.classList.toggle('active', isActive);
+        t.setAttribute('aria-selected', String(isActive));
+      });
+
+      Object.keys(editorState).forEach(function (lang) {
+        editorState[lang].wrap.classList.toggle('active', lang === tab.dataset.lang);
+      });
+
+      refreshHighlight(tab.dataset.lang);
+      editors[tab.dataset.lang].focus();
+    });
+  });
+
+  /* ---- Tab / Shift+Tab indentation ---- */
+  function handleIndent(editor, outdent) {
+    const value = editor.value;
+    const selStart = editor.selectionStart;
+    const selEnd = editor.selectionEnd;
+
+    // Simple case: no selection + indent → insert two spaces at the caret.
+    if (!outdent && selStart === selEnd) {
+      editor.setRangeText(INDENT, selStart, selEnd, 'end');
+      return true;
+    }
+
+    // Expand the range to whole lines.
+    const blockStart = value.lastIndexOf('\n', selStart - 1) + 1;
+    let blockEnd = value.indexOf('\n', selEnd);
+    if (blockEnd === -1) blockEnd = value.length;
+
+    const block = value.slice(blockStart, blockEnd);
+    const lines = block.split('\n');
+
+    const updated = lines.map(function (line) {
+      if (outdent) {
+        if (line.indexOf(INDENT) === 0) return line.slice(INDENT.length);
+        if (line.charAt(0) === '\t') return line.slice(1);
+        return line.replace(/^ {1,2}/, '');
+      }
+      return INDENT + line;
+    }).join('\n');
+
+    if (updated === block) return false;
+
+    editor.setRangeText(updated, blockStart, blockEnd, 'select');
+
+    // Keep the selection covering the modified block.
+    editor.selectionStart = blockStart;
+    editor.selectionEnd = blockStart + updated.length;
+
+    return true;
+  }
+
+  Object.keys(editors).forEach(function (lang) {
+    const editor = editors[lang];
+
+        editor.addEventListener('input', function () {
+      refreshHighlight(lang);
+      scheduleRun();
+    });
+
+    editor.addEventListener('keydown', function (event) {
+      /* --- Tab / Shift+Tab --- */
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        handleIndent(editor, event.shiftKey);
+        refreshHighlight(lang);
+        scheduleRun();
+        return;
+      }
+
+      /* --- Enter: keep current indentation, add one level after an opener --- */
+      if (event.key === 'Enter') {
+        const value = editor.value;
+        const pos = editor.selectionStart;
+
+        if (pos !== editor.selectionEnd) return; // let the default handle it
+
+        const lineStart = value.lastIndexOf('\n', pos - 1) + 1;
+        const currentLine = value.slice(lineStart, pos);
+        const indentMatch = currentLine.match(/^[ \t]*/);
+        const indent = indentMatch ? indentMatch[0] : '';
+
+        const trimmed = currentLine.replace(/\s+$/, '');
+        const extra = /[{\[(:]$/.test(trimmed) ? INDENT : '';
+
+        if (!indent && !extra) return; // nothing to do
+
+        event.preventDefault();
+        editor.setRangeText('\n' + indent + extra, pos, pos, 'end');
+        refreshHighlight(lang);
+        scheduleRun();
+        return;
+      }
+
+      /* --- Ctrl/Cmd + Enter: force an immediate run --- */
+      if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+        event.preventDefault();
+        runPreview();
+      }
+    });
+  });
+
+  /* ============================================================
+     SPLITTER (drag to resize)
+     ============================================================ */
+  (function initSplitter() {
+    let dragging = false;
+
+    splitter.addEventListener('pointerdown', function (event) {
+      if (window.matchMedia('(max-width: 860px)').matches) return;
+      dragging = true;
+      splitter.classList.add('dragging');
+      document.body.classList.add('dragging');
+      try { splitter.setPointerCapture(event.pointerId); } catch (e) {}
+      event.preventDefault();
+    });
+
+    splitter.addEventListener('pointermove', function (event) {
+      if (!dragging) return;
+
+      const rect = workspace.getBoundingClientRect();
+      if (rect.width === 0) return;
+
+      let percent = ((event.clientX - rect.left) / rect.width) * 100;
+      percent = Math.max(18, Math.min(82, percent));
+      workspace.style.setProperty('--editor-w', percent + '%');
+    });
+
+    function stopDrag(event) {
+      if (!dragging) return;
+      dragging = false;
+      splitter.classList.remove('dragging');
+      document.body.classList.remove('dragging');
+      try { splitter.releasePointerCapture(event.pointerId); } catch (e) {}
+    }
+
+    splitter.addEventListener('pointerup', stopDrag);
+    splitter.addEventListener('pointercancel', stopDrag);
+
+    /* Keyboard accessibility for the splitter */
+    splitter.tabIndex = 0;
+    splitter.addEventListener('keydown', function (event) {
+      const step = event.shiftKey ? 8 : 2;
+      const current = parseFloat(
+        getComputedStyle(workspace).getPropertyValue('--editor-w')
+      ) || 50;
+
+      if (event.key === 'ArrowLeft') {
+        workspace.style.setProperty('--editor-w', Math.max(18, current - step) + '%');
+        event.preventDefault();
+      } else if (event.key === 'ArrowRight') {
+        workspace.style.setProperty('--editor-w', Math.min(82, current + step) + '%');
+        event.preventDefault();
+      }
+    });
+  })();
+
+  /* ============================================================
+     TOAST
+     ============================================================ */
+  let toastTimer = null;
+
+  function showToast(message) {
+    toastEl.textContent = message;
+    toastEl.classList.add('show');
+    window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 1900);
+  }
+
+  /* ============================================================
+     TOOLBAR ACTIONS
+     ============================================================ */
+  runBtn.addEventListener('click', function () {
+    runPreview();
+    showToast('Preview refreshed');
+  });
+
+  reloadBtn.addEventListener('click', function () {
+    runPreview();
+  });
+
+  /* ---- Fullscreen preview ---- */
+  const ICON_ENTER_FS =
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M8 3H5a2 2 0 0 0-2 2v3"/>' +
+    '<path d="M16 3h3a2 2 0 0 1 2 2v3"/>' +
+    '<path d="M8 21H5a2 2 0 0 1-2-2v-3"/>' +
+    '<path d="M16 21h3a2 2 0 0 0 2-2v-3"/>' +
+    '</svg>';
+
+  const ICON_EXIT_FS =
+    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" ' +
+    'stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M8 3v3a2 2 0 0 1-2 2H3"/>' +
+    '<path d="M16 3v3a2 2 0 0 0 2 2h3"/>' +
+    '<path d="M8 21v-3a2 2 0 0 0-2-2H3"/>' +
+    '<path d="M16 21v-3a2 2 0 0 1 2-2h3"/>' +
+    '</svg>';
+
+  function setPreviewFullscreen(active) {
+    document.body.classList.toggle('preview-fullscreen', active);
+    fullscreenBtn.innerHTML = active ? ICON_EXIT_FS : ICON_ENTER_FS;
+    fullscreenBtn.title = active
+      ? 'Exit fullscreen (Esc)'
+      : 'Fullscreen preview (Esc to exit)';
+  }
+
+  fullscreenBtn.addEventListener('click', function () {
+    setPreviewFullscreen(!document.body.classList.contains('preview-fullscreen'));
+  });
+
+  /* ---- Copy to clipboard ---- */
+  copyBtn.addEventListener('click', function () {
+    const code = buildStandaloneDocument();
+
+    function fallbackCopy() {
+      const temp = document.createElement('textarea');
+      temp.value = code;
+      temp.setAttribute('readonly', '');
+      temp.style.position = 'fixed';
+      temp.style.top = '-1000px';
+      document.body.appendChild(temp);
+      temp.select();
+      let ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+      document.body.removeChild(temp);
+      showToast(ok ? 'Code copied to clipboard' : 'Copy failed — select manually');
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code)
+        .then(function () { showToast('Code copied to clipboard'); })
+        .catch(fallbackCopy);
+    } else {
+      fallbackCopy();
+    }
+  });
+
+  /* ---- Download as a single .html file ---- */
+  downloadBtn.addEventListener('click', function () {
+    const blob = new Blob([buildStandaloneDocument()], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'index.html';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    window.setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+    showToast('Downloaded index.html');
+  });
+
+  /* ---- Clear all editors ---- */
+  clearBtn.addEventListener('click', function () {
+    const hasContent = Object.keys(editors).some(function (lang) {
+      return editors[lang].value.trim() !== '';
+    });
+    if (!hasContent) {
+      showToast('Editors are already empty');
+      return;
+    }
+    if (!window.confirm('Clear all editors? This cannot be undone.')) return;
+
+    Object.keys(editors).forEach(function (lang) {
+      editors[lang].value = '';
+      editorState[lang].lastValue = null;
+    });
+    refreshAllHighlights();
+    runPreview();
+    getActiveEditor().focus();
+    showToast('All editors cleared');
+  });
+
+  /* ---- Restore the starter template ---- */
+  resetBtn.addEventListener('click', function () {
+    if (!window.confirm('Restore the starter template? Your current code will be lost.')) return;
+    loadTemplate();
+    runPreview();
+    showToast('Starter template restored');
+  });
+
+  /* ---- Console controls ---- */
+  consoleToggle.addEventListener('click', toggleConsole);
+  closeConsoleBtn.addEventListener('click', closeConsole);
+  clearConsoleBtn.addEventListener('click', function () {
+    resetConsole();
+    showToast('Console cleared');
+  });
+
+  /* ============================================================
+     GLOBAL SHORTCUTS
+     ============================================================ */
+  document.addEventListener('keydown', function (event) {
+    /* Esc exits preview fullscreen */
+    if (event.key === 'Escape' && document.body.classList.contains('preview-fullscreen')) {
+      setPreviewFullscreen(false);
+      return;
+    }
+
+    const mod = event.ctrlKey || event.metaKey;
+    if (!mod) return;
+
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      runPreview();
+      showToast('Preview refreshed');
+    } else if (event.key.toLowerCase() === 's') {
+      event.preventDefault();
+      downloadBtn.click();
+    }
+  });
+
+  /* ============================================================
+     BOOTSTRAP
+     ============================================================ */
+  function loadTemplate() {
+    editors.html.value = DEFAULT_HTML;
+    editors.css.value  = DEFAULT_CSS;
+    editors.js.value   = DEFAULT_JS;
+    Object.keys(editorState).forEach(function (lang) {
+      editorState[lang].lastValue = null;
+    });
+  }
+
+  function init() {
+    loadTemplate();
+    refreshAllHighlights();
+    runPreview();
+    editors.html.focus();
+  }
+
+  init();
+})();
+</script>
+</body>
+</html>
