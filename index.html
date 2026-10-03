@@ -1400,6 +1400,7 @@ function escapeStyleContent(css) {
      LIVE PREVIEW
      ============================================================ */
   let debounceTimer = null;
+  let previewBlobUrl = null;
 
   function scheduleRun() {
     window.clearTimeout(debounceTimer);
@@ -1409,7 +1410,16 @@ function escapeStyleContent(css) {
   function runPreview() {
     window.clearTimeout(debounceTimer);
     resetConsole();
-    preview.srcdoc = buildPreviewDocument();
+
+    const html = buildPreviewDocument();
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+
+    if (previewBlobUrl) URL.revokeObjectURL(previewBlobUrl);
+    previewBlobUrl = url;
+
+    preview.removeAttribute('srcdoc');
+    preview.src = url;
   }
 
   /* ============================================================
